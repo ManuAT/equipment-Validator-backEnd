@@ -10,7 +10,6 @@ var methodOverride = require('method-override');
 var cors = require('cors');
 // configuration ===============================================================
 
-// mongoose.connect('mongodb+srv://manu:cat007@@cluster0-axhr4.mongodb.net/', {dbName: 'manu'});
 
 
 
