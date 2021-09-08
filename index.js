@@ -94,8 +94,8 @@ app.get('/api/community',cors(corsOptions), function (req, res) {
     "mode": "cors"
   });
   const data = await raw.json();
-  // console.log(data) 
-  res.send(data.data.listAllCommunities.map(item=>item.data.clientId))
+  console.log(data) 
+  res.send(data.data.listAllCommunities.map(item=>({clientId:item.data.clientId,clientName :item.data.clientName})))
   }
   allCommunity()
 })
@@ -162,7 +162,7 @@ const main = async () => {
 
 
 
-const port = process.env.PORT || 3000
+const port = process.env.PORT || 8081
 var server = app.listen(port, function () {
    var host = server.address().address
    var port = server.address().port
