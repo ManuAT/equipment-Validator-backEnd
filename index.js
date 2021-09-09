@@ -124,6 +124,7 @@ app.get('/api/community',cors(corsOptions), function (req, res) {
   });
   const data = await raw.json();
   console.log(data) 
+  // res.send(data.data.listAllCommunities)
   res.send(data.data.listAllCommunities.map(item=>({clientId:item.data.clientId,clientName :item.data.clientName})))
   }
   allCommunity()
