@@ -71,6 +71,35 @@ app.get('/api/subcommunity',cors(corsOptions), function (req, res) {
   allSubCommunity()
 })
 
+app.get('/api/device',cors(corsOptions), function (req, res) {
+  // res.send('Hello World'+accessToken);
+  const allDevice = async () => {
+  const raw = await fetch("https://assets.nectarit.com/api/graphql", {
+    "headers": {
+      "accept": "*/*",
+      "accept-language": "en-US,en;q=0.9,ta;q=0.8,ml;q=0.7",
+      "content-type": "application/json",
+      "csrftoken": "ktcoftlivilatllb6n",
+      "sec-ch-ua": "\"Chromium\";v=\"92\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"92\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-fetch-dest": "empty",
+      "sec-fetch-mode": "cors",
+      "sec-fetch-site": "same-origin",
+      "cookie": "csrfToken=ktcoftlivilatllb6n; accessToken="+accessToken
+    },
+    "referrer": "https://assets.nectarit.com/asset/list",
+    "referrerPolicy": "strict-origin-when-cross-origin",
+    "body": "{\"operationName\":\"getDeviceList\",\"variables\":{\"domain\":\"nectarit\"},\"query\":\"query getDeviceList($domain: String!) {\\n  getDeviceList(domain: $domain) {\\n    type\\n    data\\n  }\\n}\\n\"}",
+    "method": "POST",
+    "mode": "cors"
+  });
+  const data = await raw.json();
+  // console.log(data) 
+  res.send(data.data.getDeviceList.map(item=>item.data.sourceId))
+  }
+  allDevice()
+})
+
 app.get('/api/community',cors(corsOptions), function (req, res) {
   // res.send('Hello World'+accessToken);
   const allCommunity = async () => {
