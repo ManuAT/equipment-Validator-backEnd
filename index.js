@@ -1,7 +1,11 @@
 import express from 'express';
 import fetch from "node-fetch";
 import cors from 'cors'
+import axios from 'axios';
 var app = express();
+
+
+
 
 var corsOptions = {
   origin: '*',
@@ -9,12 +13,16 @@ var corsOptions = {
 }
 
 var accessToken = '';
-app.get('/', function (req, res) {
+app.get('/',cors(corsOptions),function (req, res) {
    res.send('Hello World');
+})
+app.get('/api', cors(corsOptions),function (req, res) {
+  main()
+  res.send('token is up');
+
 })
 
 app.get('/api/client',cors(corsOptions),function(req, res) {
-  main()
   const allClients = async () => {
   const raw = await fetch("https://assets.nectarit.com/api/graphql", {
     "headers": {
@@ -37,7 +45,7 @@ app.get('/api/client',cors(corsOptions),function(req, res) {
   });
   const data = await raw.json();
   // console.log(data) 
-  res.send(data.data.findAllClients.map(item=>item.data.clientName))
+  res.send(data.data.findAllClients.map(item=>item.data.clientId))
   }
   allClients()
 })
@@ -73,6 +81,7 @@ app.get('/api/subcommunity',cors(corsOptions), function (req, res) {
 
 app.get('/api/device',cors(corsOptions), function (req, res) {
   // res.send('Hello World'+accessToken);
+  const domain = req.query.domain
   const allDevice = async () => {
   const raw = await fetch("https://assets.nectarit.com/api/graphql", {
     "headers": {
@@ -89,7 +98,7 @@ app.get('/api/device',cors(corsOptions), function (req, res) {
     },
     "referrer": "https://assets.nectarit.com/asset/list",
     "referrerPolicy": "strict-origin-when-cross-origin",
-    "body": "{\"operationName\":\"getDeviceList\",\"variables\":{\"domain\":\"nectarit\"},\"query\":\"query getDeviceList($domain: String!) {\\n  getDeviceList(domain: $domain) {\\n    type\\n    data\\n  }\\n}\\n\"}",
+    "body": "{\"operationName\":\"getDeviceList\",\"variables\":{\"domain\":\""+domain+"\"},\"query\":\"query getDeviceList($domain: String!) {\\n  getDeviceList(domain: $domain) {\\n    type\\n    data\\n  }\\n}\\n\"}",
     "method": "POST",
     "mode": "cors"
   });
@@ -101,7 +110,7 @@ app.get('/api/device',cors(corsOptions), function (req, res) {
 })
 
 app.get('/api/community',cors(corsOptions), function (req, res) {
-  // res.send('Hello World'+accessToken);
+  const domain = req.query.domain
   const allCommunity = async () => {
   const raw = await fetch("https://assets.nectarit.com/api/graphql", {
     "headers": {
@@ -118,22 +127,44 @@ app.get('/api/community',cors(corsOptions), function (req, res) {
     },
     "referrer": "https://assets.nectarit.com/asset/list",
     "referrerPolicy": "strict-origin-when-cross-origin",
-    "body": "{\"operationName\":\"listAllCommunities\",\"variables\":{\"domain\":\"nectarit\"},\"query\":\"query listAllCommunities($domain: String!, $parentFlag: Boolean) {\\n  listAllCommunities(domain: $domain, parentFlag: $parentFlag) {\\n    type\\n    data\\n  }\\n}\\n\"}",
+    "body": "{\"operationName\":\"listAllCommunities\",\"variables\":{\"domain\":\""+domain+"\"},\"query\":\"query listAllCommunities($domain: String!, $parentFlag: Boolean) {\\n  listAllCommunities(domain: $domain, parentFlag: $parentFlag) {\\n    type\\n    data\\n  }\\n}\\n\"}",
     "method": "POST",
     "mode": "cors"
   });
   const data = await raw.json();
-  console.log(data) 
-  // res.send(data.data.listAllCommunities)
-  res.send(data.data.listAllCommunities.map(item=>({clientId:item.data.clientId,clientName :item.data.clientName})))
+  res.send(data.data.listAllCommunities.map(item=>({domain:item.data.domain,clientName:item.data.clientId})))
   }
   allCommunity()
 })
 
+app.get('/api/point',cors(corsOptions), function (req, res) {
+  const domain = req.query.domain
+  const allPoints = async () => {
+
+    const raw = await axios.get('https://api.nectarit.com:8280/alpine-template/1.0.0/templates/template/listall/details?domain='+domain, {
+      headers: {
+        'Authorization':  'Bearer '+accessToken
+      }
+    })
+    .then((res) => {
+      
+      return res.data
+    })
+    // .catch((error) => {
+    //   // console.error(error)
+    // })
+    // const data = await raw.json();
+    res.send(raw)
+
+  }
+  allPoints()
+})
+
 app.get('/api/site',cors(corsOptions), function (req, res) {
   // res.send('Hello World'+accessToken);
-  const allbuildings = async () => {
-  const raw = await fetch("https://assets.nectarit.com/api/graphql", {
+  const domain = req.query.domain
+  const allbuildings = async () => {  
+    const raw = await fetch("https://assets.nectarit.com/api/graphql", {
     "headers": {
       "accept": "*/*",
       "accept-language": "en-US,en;q=0.9,ta;q=0.8,ml;q=0.7",
@@ -146,15 +177,16 @@ app.get('/api/site',cors(corsOptions), function (req, res) {
       "sec-fetch-site": "same-origin",
       "cookie": "csrfToken=kt8ahnmr2fa9l3c82xx; accessToken="+accessToken
     },
-    "referrer": "https://assets.nectarit.com/asset/list",
+    "referrer": "https://assets.nectarit.com/api/graphql",
     "referrerPolicy": "strict-origin-when-cross-origin",
-    "body": "{\"operationName\":\"findAllBuildings\",\"variables\":{\"domain\":\"nectarit\"},\"query\":\"query findAllBuildings($domain: String!, $subCommunity: Entity, $type: String) {\\n  findAllBuildings(domain: $domain, subCommunity: $subCommunity, type: $type) {\\n    type\\n    data\\n  }\\n}\\n\"}",
+    "body": "{\"operationName\":\"findAllBuildings\",\"variables\":{\"domain\":\""+domain+"\"},\"query\":\"query findAllBuildings($domain: String!, $subCommunity: Entity, $type: String) {\\n  findAllBuildings(domain: $domain, subCommunity: $subCommunity, type: $type) {\\n    type\\n    data\\n  }\\n}\\n\"}",
     "method": "POST",
     "mode": "cors"
   });
   const data = await raw.json();
-  console.log(data) 
-  res.send(data.data.findAllBuildings.map(item=> ({name:item.data.name,ownerClientId:item.data.ownerClientId,ownerName:item.data.ownerName}) ))
+  // console.log(data) 
+  // res.send(data.data.findAllBuildings.map(item=> (item.data) ))
+  res.send(data.data.findAllBuildings.map(item=> ({name:item.data.name,ownerClientId:item.data.ownerClientId,domain:item.data.domain}) ))
   }
   allbuildings()
 })
